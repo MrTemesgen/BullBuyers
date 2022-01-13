@@ -1,0 +1,83 @@
+﻿@page "{ticker}"
+@model WebApplication1.Pages.DetailsModel
+@{
+    ViewData["Title"] = "Details";
+    Console.WriteLine(Model.name);
+    IDictionary<string, Domain.Stock> dict = Application.StockListBuilder.stocks.ToDictionary(s => s.Ticker);
+
+    Domain.Stock stock;
+   dict.TryGetValue(Model.name, out stock);
+
+
+    }
+<div class="justify-content-lg-start">
+    <table class="table-bordered col-3 col-md-offset-2 table shadow">
+        <thead>
+            <tr class="text-center">
+
+                <th style="font-size:larger; color:darkgoldenrod" colspan="4">
+                    <div style="border-color:darkgoldenrod;">Key Data for @stock.Ticker</div>
+                </th>
+
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>Price</strong></td>
+                <td>$@stock.Price</td>
+            </tr>
+            <tr>
+                <td><strong>Earnings Day</strong></td>
+                <td>
+                    @if (stock.ReportDay == DateTime.MinValue)
+                    {
+                        string res = "N/A";
+                        @res;
+                    }
+                    else
+                    {
+                        @stock.ReportDay.ToString("M/d/yyyy");
+                    }
+                </td>
+
+            </tr>
+            <tr>
+                <td><strong>Price Change</strong></td>
+                <td>@stock.PriceChange%</td>
+            </tr>
+            <tr>
+                <td><strong>Volume</strong></td>
+                <td>@String.Format("{0:n0}", stock.Volume)</td>
+            </tr>
+
+        </tbody>
+
+    </table>
+
+    <table class="table-bordered col-3 col-md-offset-2 table shadow">
+        <thead>
+            <tr class="text-center">
+
+                <th style="font-size:larger; color:darkgoldenrod" colspan="4">
+                    <div style="border-color:darkgoldenrod;">Key Data for @stock.Ticker</div>
+                </th>
+
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>CHK</strong></td>
+                <td>@stock.CIK</td>
+            </tr>
+            <tr>
+                <td>
+                    @Data.SEC_Data.SEC_Data.GetInsiderLink(@stock)
+                </td>
+            </tr>
+      
+        </tbody>
+
+    </table>
+
+</div>
+

@@ -1,0 +1,129 @@
+﻿@page 
+@model WebApplication1.Pages.SearchModel
+
+@{
+    ViewData["Title"] = "Search For Bulls";
+
+}
+<style>
+    .clickable {
+        cursor: pointer
+    }
+</style>
+
+<h1 style="font-size:medium">@ViewData["Heading"]</h1>
+<form asp-page-handler="Search" method="post">
+    <div class="form-group">
+        <div class="input-group">
+            <input type="search" class="form-control"
+                   style="@(Model.tickerFound ? "border-color:black;background-color:white" : "border-color:darkred;background-color:mistyrose") "
+                   placeholder="@(Model.tickerFound ? "Search Any Ticker" : "Ticker Not Found")" name="ticker" />
+        </div>
+    </div>
+</form>
+
+<table class="table shadow">
+    <thead>
+        <tr>
+            <th id="symbol">
+                <form asp-page-handler="Sort" method="post">
+                    <button class="btn btn-group-toggle SearchTableBtn"><img id="toggle" src="~/toggle.png">Symbol</button>
+                    
+                    <input type="hidden" name="sortOrder" value="symbol" />
+                </form>
+            </th>
+            <th id="price">
+                <form asp-page-handler="Sort" method="post">
+                    <button class="btn btn-group-toggle SearchTableBtn"><img id="toggle" src="~/toggle.png">Price</button>
+                    <input type="hidden" name="sortOrder" value="price" />
+                </form>
+            </th>
+            <th id="run">
+                <form asp-page-handler="Sort" method="post">
+                    <button class="btn btn-group-toggle SearchTableBtn"><img id="toggle" src="~/toggle.png">Change</button>
+                    <input type="hidden" name="sortOrder" value="run" />
+                </form>
+            </th>
+            <th id="rating">
+                <form asp-page-handler="Sort" method="post">
+                    <button class="btn btn-group-toggle SearchTableBtn"><img id="toggle" src="~/toggle.png">Rating</button>
+                    <input type="hidden" name="sortOrder" value="rating" />
+                </form>
+            </th>
+            <th id="volume">
+                <form asp-page-handler="Sort" method="post">
+                    <button class="btn btn-group-toggle SearchTableBtn"><img id="toggle" src="~/toggle.png">Volume</button>
+                    <input type="hidden" name="sortOrder" value="volume" />
+                </form>
+            </th>
+            <th id="report">
+                <form asp-page-handler="Sort" method="post">
+                    <button class="btn btn-group-toggle SearchTableBtn"><img id="toggle" src="~/toggle.png">Earnings Day</button>
+                    <input type="hidden" name="sortOrder" value="report" />
+                </form>
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (Domain.Stock stock in Model.Stocks)
+        {
+            var color = "#f5fac5";
+            @if (stock.PriceChange > 2)
+            {
+                color = "#b6faa0";
+            }
+            @if (stock.PriceChange < -2)
+            {
+                color = "#ff9696";
+            }
+        
+            <tr style="background-color:@color" >
+
+                <td headers="symbol" style="background-color:ivory">
+                    <a asp-page="/Details" asp-route-TICKER="@stock.Ticker">@stock.Ticker</a>
+                </td>
+                <td headers="price">$@stock.Price</td>
+                <td headers="run">@stock.PriceChange%</td>
+                <td headers="rating">
+                    @{
+                        if (stock.AverageRating == Domain.Rating.Strong_Buy)
+                        {
+                            string rating = "Strong Buy";
+                            @rating
+                        }
+                        else if (stock.AverageRating == Domain.Rating.Strong_Sell)
+                        {
+                            string rating = "Strong Sell";
+                            @rating
+                        }
+                        else
+                        {
+
+                            @stock.AverageRating
+                        }
+                    }
+                </td>
+                <td headers="volume">@String.Format("{0:n0}", stock.Volume)</td>
+                <td headers="report">
+                    @{
+                        if (!stock.ReportDay.Equals(DateTime.MinValue))
+                        {
+                            @stock.ReportDay.ToString("M/d/yyyy");
+                        }
+                        else
+                        {
+                            var none = "N/A";
+                            @none;
+                        }
+
+                    }
+                </td>
+                
+
+            </tr>
+            
+        }
+    </tbody>
+</table>
+
+ 

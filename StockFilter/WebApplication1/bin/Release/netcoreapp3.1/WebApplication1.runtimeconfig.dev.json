@@ -1,0 +1,8 @@
+{
+  "runtimeOptions": {
+    "additionalProbingPaths": [
+      "C:\\Users\\tabre\\.dotnet\\store\\|arch|\\|tfm|",
+      "C:\\Users\\tabre\\.nuget\\packages"
+    ]
+  }
+}

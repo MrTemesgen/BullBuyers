@@ -1,0 +1,63 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Home page";
+}
+
+    <div class="row container">
+        <table class="col-7 col-md-offset-2 table shadow" style="height:min-content">
+            
+            <caption class="figure-caption">@Model.TableHeading</caption>
+            <thead>
+                <tr class="text-center">
+
+                    <th style="font-size:larger; color:darkgoldenrod" colspan="4">
+                        <div style="border-color:darkgoldenrod;">@Model.TableHeading</div>
+                    </th>
+
+                </tr>
+                <tr>
+                    <th class="w-25">Ticker</th>
+                    <th class="w-25">Price</th>
+                    <th class="w-25">Volume</th>
+                    <th class="w-25">Earnings Day</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (WebApplication1.Domain.Stock stock in Model.Stocks)
+                {
+                    var color = "#f5fac5";
+                    @if (stock.PriceChange > 2)
+                    {
+                        color = "#b6faa0";
+                    }
+                    @if (stock.PriceChange < -2)
+                    {
+                        color = "#ff9696";
+                    }
+                    <tr style="background-color:@color">
+                        <td><a asp-page="/Details" asp-route-TICKER="@stock.Ticker">@stock.Ticker</a></td>
+                        <td>$@stock.Price</td>
+                        <td>@String.Format("{0:n0}", stock.Volume)</td>
+                        <td>
+                            @if (stock.ReportDay == DateTime.MinValue)
+                            {
+                                string res = "N/A";
+                                @res;
+                            }
+                            else
+                            {
+                                @stock.ReportDay.ToString("M/d/yyyy");
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        <div class="col-4">
+            <a class="twitter-timeline" scrolling ="yes" data-tweet-limit="20" href="https://twitter.com/Nasdaq?ref_src=twsrc%5Egoogle%7Ctwcamp%5Eserp%7Ctwgr%5Eauthor" style="height:200px">Tweets by tradesviz1</a>
+            <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+        </div>
+    </div>
+
+
