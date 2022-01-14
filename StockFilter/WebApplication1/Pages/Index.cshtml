@@ -27,11 +27,11 @@
                 @foreach (WebApplication1.Domain.Stock stock in Model.Stocks)
                 {
                     var color = "#f5fac5";
-                    @if (stock.PriceChange > 2)
+                    @if (stock.PriceChange > 1)
                     {
                         color = "#b6faa0";
                     }
-                    @if (stock.PriceChange < -2)
+                    @if (stock.PriceChange < -1)
                     {
                         color = "#ff9696";
                     }
@@ -55,7 +55,7 @@
             </tbody>
         </table>
         <div class="col-4">
-            <a class="twitter-timeline" scrolling ="yes" data-tweet-limit="20" href="https://twitter.com/Nasdaq?ref_src=twsrc%5Egoogle%7Ctwcamp%5Eserp%7Ctwgr%5Eauthor" style="height:200px">Tweets by tradesviz1</a>
+            <a class="twitter-timeline" scrolling ="yes" data-tweet-limit="1" href="https://twitter.com/Nasdaq?ref_src=twsrc%5Egoogle%7Ctwcamp%5Eserp%7Ctwgr%5Eauthor" style="height:200px">Tweets by tradesviz1</a>
             <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
         </div>
     </div>

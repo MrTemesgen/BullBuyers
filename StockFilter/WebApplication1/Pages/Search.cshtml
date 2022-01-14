@@ -68,11 +68,11 @@
         @foreach (Domain.Stock stock in Model.Stocks)
         {
             var color = "#f5fac5";
-            @if (stock.PriceChange > 2)
+            @if (stock.PriceChange > 1)
             {
                 color = "#b6faa0";
             }
-            @if (stock.PriceChange < -2)
+            @if (stock.PriceChange < -1)
             {
                 color = "#ff9696";
             }

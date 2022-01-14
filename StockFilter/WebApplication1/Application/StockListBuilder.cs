@@ -101,18 +101,10 @@ namespace WebApplication1.Application
                 Stopwatch watch = new Stopwatch();
 
                 watch.Start();
-                String call = Stock_Data.GetPrice(stock);
-                Double.TryParse(Regex.Replace(Regex.Replace(call, @"[>\d.+<]", ""), @"\d.+", ""), out double price);
-                Console.WriteLine((Regex.Replace(call, @"[>\d.+<]", "")));
-                stock.Price = price;
-
-                DateTime.TryParse(Stock_Data.GetEarningsDay(stock.Ticker), out DateTime date);
-                stock.ReportDay = date.Date;
-                
-                Int64.TryParse(Regex.Replace(Stock_Data.GetVolume(stock), "[^0-9|.]", ""), out long vol);
-                stock.Volume = vol;
-
-                // stock.Risk = Stock_Data.GetATR(ticker);
+                stock.Price = Stock_Data.GetPrice(stock);
+                stock.ReportDay = Stock_Data.GetEarningsDay(stock.Ticker);
+                stock.Volume = Stock_Data.GetVolume(stock);
+                //stock.Risk = Stock_Data.GetATR(ticker);
                 stock.PriceChange = Stock_Data.GetPriceChange(stock);
                 stock.AverageRating = GetAverageRating(stock);
                 watch.Stop();

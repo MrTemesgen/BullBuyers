@@ -21,9 +21,6 @@ namespace WebApplication1.Application
 
             var node = htmlDoc.DocumentNode.SelectSingleNode("div[contains(@class, 'results')]/table/tbody/tr/td/a/text()");
             return node.OuterHtml;
-            
-
-            
         }
     }
 }

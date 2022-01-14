@@ -112,3 +112,4 @@ C:\Users\tabre\source\BullBuyers\StockFilter\WebApplication1\obj\Debug\netcoreap
 C:\Users\tabre\source\BullBuyers\StockFilter\WebApplication1\obj\Debug\netcoreapp3.1\Razor\Pages\Details.cshtml.g.cs
 C:\Users\tabre\source\BullBuyers\StockFilter\WebApplication1\obj\Debug\netcoreapp3.1\scopedcss\bundle\WebApplication1.styles.css
 C:\Users\tabre\source\BullBuyers\StockFilter\WebApplication1\obj\Debug\netcoreapp3.1\WebApplication1.csproj.AssemblyReference.cache
+C:\Users\tabre\source\BullBuyers\StockFilter\WebApplication1\obj\Debug\netcoreapp3.1\WebApplication1.GeneratedMSBuildEditorConfig.editorconfig

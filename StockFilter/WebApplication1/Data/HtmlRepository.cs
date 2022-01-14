@@ -156,8 +156,10 @@ namespace WebApplication1.Data
                 watch.Start();
                 SetUpCiK(stock);
                 watch.Stop();
+                
                 Console.WriteLine("Loading CIK took: " + watch.ElapsedMilliseconds);
                 Console.WriteLine("Begin adding: " + stock.Ticker);
+                
                 watch.Start();
                 List<Task<HtmlDocument>> tasks = new List<Task<HtmlDocument>>();
                 List<string> links = new List<string>();
@@ -169,11 +171,11 @@ namespace WebApplication1.Data
                     Console.WriteLine("Added a page for: " + stock.Ticker);
                     tasks.Add(Task.Run(() => ReadTextFromUrl(link)));
                 }
-
                 var documents = await Task.WhenAll(tasks);
                 watch.Stop();
                 Console.WriteLine("Loading other pages took: " + watch.ElapsedMilliseconds);
                 Console.WriteLine("Begin adding: " + stock.Ticker);
+                Console.WriteLine("Documents: " + documents[0]);
 
                 Console.WriteLine("Finished adding pages for: " + stock.Ticker);
 
