@@ -82,7 +82,7 @@ namespace WebApplication1.Pages
                     Flip(ref symbol);
                     Stocks = symbol ? Stocks = Stocks.OrderByDescending(s => s.Ticker).ToList() : Stocks = Stocks.OrderBy(s => s.Ticker).ToList(); 
                     break;
-                case "Price":
+                case "price":
                     Flip(ref price);
                     Stocks = price ? Stocks = Stocks.OrderByDescending(s => s.Price).ToList() : Stocks = Stocks.OrderBy(s => s.Price).ToList();
                     break;

@@ -9,13 +9,13 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using WebApplication1.Domain;
-
+using Newtonsoft.Json.Linq;
 namespace WebApplication1.Data
 {
     public class HtmlRepository
     {
-        
-        public static int call = 0;
+        static String CIKMapping = System.IO.File.ReadAllText(".\\Application\\ticker_cik_map.txt");
+
         public static  string RetriveDataFromJsonAnalysis(string DataPath, string URL, HtmlDocument DocumentAnalysis = null, string GlobalURL = null)
         {
             try
@@ -79,8 +79,10 @@ namespace WebApplication1.Data
                         doc = stock.SECInsider;
                         break;
                     case 3:
+                        //this is actually json so just serialize and index
                         doc = stock.StockAnalyzer;
-                        break;
+                        return JObject.Parse(doc.DocumentNode.OuterHtml)[DataPath].ToString();
+                        
                 }
                     
                 var node = doc.DocumentNode.SelectSingleNode(DataPath);
@@ -90,23 +92,24 @@ namespace WebApplication1.Data
                 }
                 catch (NullReferenceException e)
                 {
+                    Console.WriteLine(e.Message);
                     return null;
                 }
             }
             catch (WebException e)
             {
-                Debug.WriteLine(e.Message);
+                Console.WriteLine(e.Message);
                 return null;
             }
             catch (NullReferenceException e)
             {
-                Debug.WriteLine(e.Message);
+                Console.WriteLine(e.Message);
                 return null;
             }
             catch (Exception e)
             {
 
-                Debug.WriteLine(e.Message);
+                Console.WriteLine(e.Message);
                 return null;
             }
 
@@ -127,7 +130,7 @@ namespace WebApplication1.Data
                 WebResponse response = request.GetResponse();
                 Stream data = response.GetResponseStream();
                 string html = String.Empty;
-                Console.WriteLine("Getting Resource");
+               
                 using (StreamReader sr = new StreamReader(data))
                 {
                     html = sr.ReadToEnd();
@@ -141,10 +144,7 @@ namespace WebApplication1.Data
             {
                 return null;
             }
-            
-
         }
-
 
 
 
@@ -152,32 +152,14 @@ namespace WebApplication1.Data
         {
             try
             {
-                Stopwatch watch = new Stopwatch();
-                watch.Start();
+               //add the CIK to the stock for accessing the correct insider trade page.
                 SetUpCiK(stock);
-                watch.Stop();
-                
-                Console.WriteLine("Loading CIK took: " + watch.ElapsedMilliseconds);
-                Console.WriteLine("Begin adding: " + stock.Ticker);
-                
-                watch.Start();
                 List<Task<HtmlDocument>> tasks = new List<Task<HtmlDocument>>();
-                List<string> links = new List<string>();
-                links.Add($"https://stockanalysis.com/stocks/{stock.Ticker.ToLower()}/");
-                links.Add($"https://sec.report/CIK/{stock.CIK}/Insider-Trades");
-                Console.WriteLine(links.Count);
-                foreach (var link in links)
-                {
-                    Console.WriteLine("Added a page for: " + stock.Ticker);
-                    tasks.Add(Task.Run(() => ReadTextFromUrl(link)));
-                }
+                tasks.Add(Task.Run(() => ReadTextFromUrl($"https://api.stockanalysis.com/wp-json/sa/p?s={stock.Ticker}&t=stocks")));
+                tasks.Add(Task.Run(() => ReadTextFromUrl($"https://sec.report/CIK/{stock.CIK}/Insider-Trades")));
                 var documents = await Task.WhenAll(tasks);
-                watch.Stop();
-                Console.WriteLine("Loading other pages took: " + watch.ElapsedMilliseconds);
-                Console.WriteLine("Begin adding: " + stock.Ticker);
-                Console.WriteLine("Documents: " + documents[0]);
+               
 
-                Console.WriteLine("Finished adding pages for: " + stock.Ticker);
 
                 stock.StockAnalyzer = documents[0];
                 stock.SECInsider = documents[1];
@@ -186,33 +168,48 @@ namespace WebApplication1.Data
                 return stock;
             }
             catch (Exception e) {
-                Console.WriteLine("Error Building Stock: "  + e);
+                Console.WriteLine("Error Building Stock: " + stock.Ticker + " with error: "+ e);
                 return null;
-            
             }
-            
+        }
+
+        public static void Update(Stock stock) {
+            try
+            {
+                using (WebClient wc = new WebClient())
+                {
+                    var str = wc.DownloadString($"https://api.stockanalysis.com/wp-json/sa/p?s={stock.Ticker}&t=stocks");
+                    var json = JObject.Parse(str);
+                    Double.TryParse(json["p"].ToString(), out double price);
+                    Double.TryParse(json["c"].ToString(), out double change);
+                    Int64.TryParse(json["v"].ToString(), System.Globalization.NumberStyles.AllowThousands, null, out long vol);
+                    stock.Price = price;
+                    stock.PriceChange = change;
+                    stock.Volume = vol;
+                }
+            }
+            catch (Exception e){
+                Console.WriteLine("Error Updating stock: " + e);
+            }
 
         }
 
         public static void SetUpCiK(Stock stock)
         {
-            var html = $"https://sec.report/Ticker/{stock.Ticker.ToUpper()}/";
-            stock.SECCik = ReadTextFromUrl(html);
-            stock.CIK = GetInsiderFilingsCIK(stock);
+            
+            //When the CIK is not in our mapping the default is an invlaid CIK 
+            long cik = 0;
+            String pat = string.Format(@"{0}\s*([0-9]*)", stock.Ticker.ToLower(), RegexOptions.Multiline);
+            Console.WriteLine(pat);
+            Match reg = Regex.Match(CIKMapping, pat);
+            if (reg.Success) {
+                Int64.TryParse(reg.Groups[1].Value, out cik);
+            }
+            
+            stock.CIK = cik;
         }
 
-        public static Int64 GetInsiderFilingsCIK(Stock stock)
-        {
-            System.Text.StringBuilder str = new StringBuilder();
-            MatchCollection matches = Regex.Matches(RetriveDataFromStockDocuments("//div[contains(@class, 'jumbotron')]/h2/text()", stock, 1), "[0-9]*");
-            for (int i = 0; i < matches.Count; i++)
-            {
-                Match match = (Match)matches[i];
-                str.Append(match.Value);
-              
-            }
-            return Int64.Parse(str.ToString());
-        }
+        
     }
 
 

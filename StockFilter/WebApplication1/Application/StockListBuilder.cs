@@ -7,10 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Net;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Text.RegularExpressions;
+using System;
 using System.Threading.Tasks;
 using WebApplication1.Data;
 using WebApplication1.Domain;
@@ -22,21 +19,31 @@ namespace WebApplication1.Application
     {
         public static List<Stock> stocks;
         public static string[] TickersFile = System.IO.File.ReadAllLines(".\\Application\\top-100-stocks-to-buy-07-27-2020.csv");
-       
+        public static DateTime prev = DateTime.UtcNow;
         public static async Task<List<Stock>> GetStocks()
         {
-            Stopwatch watch = new Stopwatch();
-            watch.Start();
-            if (stocks != null) {
-                return stocks;
+            if(stocks != null)
+            {
+                if (DateTime.UtcNow < prev.AddMinutes(5)) return stocks;
+                foreach(Stock stock in stocks.ToList())
+                {
+                    HtmlRepository.Update(stock);
+                }
+                prev = DateTime.UtcNow;
             }
             
             var tickers = TickersFile.ToList<string>();
+            var empty_stocks = new List<Stock>();
+            foreach (string ticker in tickers) 
+            {
+                empty_stocks.Add(new Stock(ticker));
+            }
+
             List<Task<Stock>> tasks = new List<Task<Stock>>();
             stocks = new List<Stock>();
-            foreach (string ticker in tickers)
+            foreach (Stock stock in empty_stocks)
             {
-                Stock stock = new Stock(ticker);
+                
                 tasks.Add(Task.Run(() => HtmlRepository.SetUpDocuments(stock)));
                 
             }
@@ -44,12 +51,7 @@ namespace WebApplication1.Application
 
             var data  = await Task.WhenAll(tasks);
 
-            watch.Stop();
 
-            Console.WriteLine("Finished setting up docs: " + watch.ElapsedMilliseconds);
-
-            watch.Reset();
-            watch.Start();
             foreach (var d in data) {
                 stocks.Add(d);
             }
@@ -60,9 +62,6 @@ namespace WebApplication1.Application
                 GetStock(stock);
             }
 
-            watch.Stop();
-
-            Console.WriteLine("Finished parsing: " + watch.ElapsedMilliseconds);
             return stocks;
         }
 
@@ -102,11 +101,13 @@ namespace WebApplication1.Application
 
                 watch.Start();
                 stock.Price = Stock_Data.GetPrice(stock);
-                stock.ReportDay = Stock_Data.GetEarningsDay(stock.Ticker);
+                stock.ReportDay = Stock_Data.GetEarningsDay(stock);
                 stock.Volume = Stock_Data.GetVolume(stock);
                 //stock.Risk = Stock_Data.GetATR(ticker);
                 stock.PriceChange = Stock_Data.GetPriceChange(stock);
                 stock.AverageRating = GetAverageRating(stock);
+                stock.CEO = Stock_Data.GetCEO(stock);
+                stock.Name = Stock_Data.GetName(stock);
                 watch.Stop();
                 Console.WriteLine(stock.Ticker + " traded at: " + stock.Price + " Estimated earnings date is: " + stock.ReportDay);
                 Console.WriteLine("Total Time (ms): " + watch.ElapsedMilliseconds);

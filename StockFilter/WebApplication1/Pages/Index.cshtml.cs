@@ -24,7 +24,7 @@ namespace WebApplication1.Pages
 
         public void OnGet()
         {
-            Stocks = Application.StockListBuilder.GetStocks().Result.OrderByDescending(s => s.PriceChange).Take(10).ToList();
+            Stocks = Application.StockListBuilder.GetStocks().Result.OrderByDescending(s => s.PriceChange).ToList();
            
             TableHeading = "Top Earners For " + @DateTime.UtcNow.ToString("M/d/yyyy");
         }
