@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using ServiceStack;
 using WebApplication1.Data;
 using WebApplication1.Domain;
+using System.Net.NetworkInformation;
 
 namespace WebApplication1.Pages
 {
@@ -29,6 +28,7 @@ namespace WebApplication1.Pages
         {
             
             Stocks = Application.StockListBuilder.GetStocks().Result;
+
 
         }
         public void OnGet()
@@ -69,6 +69,47 @@ namespace WebApplication1.Pages
         {
             return new RedirectToPageResult("/Details", Application.StockListBuilder.GetStock(stock).Result.Ticker);
             
+        }
+
+
+        public JsonResult OnGetUpdate()
+        {
+            if (!online()) {
+                return new JsonResult(new {
+                    Ticker = "",
+                    Price = -1,
+                    PriceChange = 0,
+                    Volume = 0
+                });
+            }
+            var index = new Random().Next(0, Stocks.Count());
+            HtmlRepository.Update(Stocks[0]);
+            var result = new
+            {
+                Ticker = Stocks[index].Ticker,
+                Price = Stocks[index].Price,
+                PriceChange = Stocks[index].PriceChange,
+                Volume = String.Format("{0:n0}", Stocks[index].Volume)
+            };
+            return new JsonResult(result);
+        }
+
+        public Boolean online() {
+            try
+            {
+                Ping myPing = new Ping();
+                String host = "google.com";
+                byte[] buffer = new byte[32];
+                int timeout = 1000;
+                PingOptions pingOptions = new PingOptions();
+                PingReply reply = myPing.Send(host, timeout, buffer, pingOptions);
+                return (reply.Status == IPStatus.Success);
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+
         }
 
         public void OnPostSort(string sortOrder)

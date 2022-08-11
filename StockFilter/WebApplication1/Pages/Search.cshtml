@@ -1,4 +1,5 @@
-﻿@page 
+﻿@page
+
 @model WebApplication1.Pages.SearchModel
 
 @{
@@ -9,23 +10,26 @@
     .clickable {
         cursor: pointer
     }
+
     .scrollable {
         height: 364px;
         overflow-y: scroll;
     }
+
     th {
         position: sticky;
-        background-color:white;
+        background-color: white;
         z-index: 2;
         top: 0;
     }
 </style>
 
+
 <h1 style="font-size:medium">@ViewData["Heading"]</h1>
 <form asp-page-handler="Search" method="post">
     <div class="form-group">
         <div class="input-group">
-            <input type="search" class="form-control"
+            <input id="search" type="search" class="form-control"
                    style="@(Model.tickerFound ? "border-color:black;background-color:white" : "border-color:darkred;background-color:mistyrose") "
                    placeholder="@(Model.tickerFound ? "Search Any Ticker" : "Ticker Not Found")" name="ticker" />
         </div>
@@ -38,7 +42,7 @@
                 <th id="symbol">
                     <form asp-page-handler="Sort" method="post">
                         <button class="btn btn-group-toggle SearchTableBtn"><img id="toggle" src="~/toggle.png">Symbol</button>
-                    
+
                         <input type="hidden" name="sortOrder" value="symbol" />
                     </form>
                 </th>
@@ -86,15 +90,15 @@
                 {
                     color = "#ff9696";
                 }
-        
-                <tr style="background-color:@color" >
 
-                    <td headers="symbol" style="background-color:ivory">
+                <tr id="@stock.Ticker" style="transition: background-color 1s linear; background-color:@color">
+
+                    <td class="symbol" headers="symbol" style="background-color:ivory">
                         <a asp-page="/Details" asp-route-TICKER="@stock.Ticker">@stock.Ticker</a>
                     </td>
-                    <td headers="price">$@stock.Price</td>
-                    <td headers="run">@stock.PriceChange%</td>
-                    <td headers="rating">
+                    <td class="price" headers="price">$@stock.Price</td>
+                    <td class="run" headers="run">@stock.PriceChange%</td>
+                    <td class="rating" headers="rating">
                         @{
                             if (stock.AverageRating == Domain.Rating.Strong_Buy)
                             {
@@ -113,8 +117,8 @@
                             }
                         }
                     </td>
-                    <td headers="volume">@String.Format("{0:n0}", stock.Volume)</td>
-                    <td headers="report">
+                    <td class="volume" headers="volume">@String.Format("{0:n0}", stock.Volume)</td>
+                    <td class="report" headers="report">
                         @{
                             if (!stock.ReportDay.Equals(DateTime.MinValue))
                             {
@@ -128,12 +132,79 @@
 
                         }
                     </td>
-                
+
 
                 </tr>
-            
+
             }
         </tbody>
     </table>
+    <div class="modal fade" id="notConnectedModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLongTitle">Oh oh...</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    You're no longer connected, trading data may be inaccurate. 
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    Vertically ce
 </div>
- 
+@section Scripts{
+    
+
+    <script type="text/javascript" language="JavaScript">
+        offlineModalShown=false
+
+        function update()
+        {    
+                $.ajax({
+                    type: "GET",
+                    url: "/Search?handler=Update",
+                    contentType: "application/json",
+                    dataType: "json",
+                    success: function (result) {
+                        if (result.ticker == "" && !offlineModalShown) {
+                            $("#notConnectedModal").modal("show");
+                            offlineModalShown = true;
+                        } else {
+                            var color = "#f5fac5";
+                            if (result.priceChange > 1) {
+                                color = "#b6faa0";
+                            } else if (result.priceChange < -1) {
+                                color = "#ff9696";
+                            }
+                            $('#' + result.ticker).css("background-color", color)
+                            $('#' + result.ticker + " td.price").html("$" + result.price),
+                                $('#' + result.ticker + " td.run").html(result.priceChange + "%"),
+                                $('#' + result.ticker + " td.volume").html(result.volume)
+                        }
+
+                    },
+                    error: function (req, status, error) {
+
+                        console.log(status);
+                    }
+
+                })
+            
+               
+            
+        }
+
+        $(document).ready(function () {
+            setInterval(update, 5000);
+
+        })
+    </script>
+}

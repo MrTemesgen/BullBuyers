@@ -1,11 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using WebApplication1.Domain;
+﻿using WebApplication1.Domain;
+using System;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using WebApplication1.Application;
+using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json.Linq;
+
 
 namespace WebApplication1.Pages
 {
@@ -14,8 +12,18 @@ namespace WebApplication1.Pages
         public string name = "None Found";
         public void OnGet(string Ticker)
         {
-            name = Ticker;
-                     
+            
+            name = Ticker;        
         }
+
+        public  JsonResult OnGetWeeklyData(string Ticker) {
+            JObject data = Data.HtmlRepository.GetStockChartWeekly(Ticker);
+            
+            return new JsonResult(data.ToString());
+        
+        }
+
+
+
     }
 }

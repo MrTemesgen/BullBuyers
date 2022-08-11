@@ -32,9 +32,8 @@ namespace WebApplication1.Data
             return price;
         }
         public static double GetPriceChange(Stock stock) {
-            var xss = HtmlRepository.RetriveDataFromStockDocuments("c", stock, 3);
-            Console.WriteLine("xss: " + xss);
-            Double.TryParse(xss, out double change);
+            var pc = HtmlRepository.RetriveDataFromStockDocuments("cp", stock, 3);
+            Double.TryParse(pc, out double change);
             return change;
         }
         public static long GetVolume(Stock stock) {

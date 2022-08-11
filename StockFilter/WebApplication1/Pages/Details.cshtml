@@ -1,59 +1,68 @@
 ﻿@page "{ticker}"
 @model WebApplication1.Pages.DetailsModel
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 @{
     ViewData["Title"] = "Details";
     Console.WriteLine(Model.name);
     IDictionary<string, Domain.Stock> dict = Application.StockListBuilder.stocks.ToDictionary(s => s.Ticker);
 
     Domain.Stock stock;
-   dict.TryGetValue(Model.name, out stock);
+    dict.TryGetValue(Model.name, out stock);
 }
 
+
 <div class="justify-content-lg-start">
-    <table class="table-bordered col-3 col-md-offset-2 table shadow">
-        <thead>
-            <tr class="text-center">
+    <div class="row col-3 col-md">
+        <table style="margin-bottom:-5rem; height:fit-content" class="table-bordered col-3 col-md-offset-2 table shadow">
+            <thead>
+                <tr class="text-center">
 
-                <th style="font-size:larger; color:darkgoldenrod" colspan="4">
-                    <div style="border-color:darkgoldenrod;">Key Data for @stock.Ticker</div>
-                </th>
+                    <th style="font-size:larger; color:darkgoldenrod" colspan="4">
+                        <div style="border-color:darkgoldenrod;">Key Data for @stock.Ticker</div>
+                    </th>
 
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td><strong>Price</strong></td>
-                <td>$@stock.Price</td>
-            </tr>
-            <tr>
-                <td><strong>Earnings Day</strong></td>
-                <td>
-                    @if (stock.ReportDay == DateTime.MinValue)
-                    {
-                        string res = "N/A";
-                        @res;
-                    }
-                    else
-                    {
-                        @stock.ReportDay.ToString("M/d/yyyy");
-                    }
-                </td>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Price</strong></td>
+                    <td>$@stock.Price</td>
+                </tr>
+                <tr>
+                    <td><strong>Earnings Day</strong></td>
+                    <td>
+                        @if (stock.ReportDay == DateTime.MinValue)
+                        {
+                            string res = "N/A";
+                            @res;
+                        }
+                        else
+                        {
+                            @stock.ReportDay.ToString("M/d/yyyy");
+                        }
+                    </td>
 
-            </tr>
-            <tr>
-                <td><strong>Price Change</strong></td>
-                <td>@stock.PriceChange%</td>
-            </tr>
-            <tr>
-                <td><strong>Volume</strong></td>
-                <td>@String.Format("{0:n0}", stock.Volume)</td>
-            </tr>
+                </tr>
+                <tr>
+                    <td><strong>Price Change</strong></td>
+                    <td>@stock.PriceChange%</td>
+                </tr>
+                <tr>
+                    <td><strong>Volume</strong></td>
+                    <td>@String.Format("{0:n0}", stock.Volume)</td>
+                </tr>
 
-        </tbody>
+            </tbody>
 
-    </table>
+        </table>
+        <div style="margin-left:5rem" class="table-bordered h-20 col-7 col-md-offset-2 table shadow">
 
-    <table class="table-bordered col-3 col-md-offset-2 table shadow">
+            <div id="chartContainer" style="height:320px; width:100%;"></div>
+
+        </div>
+    </div>
+
+    <table style="margin-top:auto" class="table-bordered col-3 col-md-offset-2 table shadow">
         <thead>
             <tr class="text-center">
 
@@ -65,7 +74,7 @@
         </thead>
         <tbody>
             <tr>
-                <td><strong>CHK</strong></td>
+                <td><strong>CIK</strong></td>
                 <td>@stock.CIK</td>
             </tr>
             <tr>
@@ -80,10 +89,74 @@
                 <td><strong>CEO</strong></td>
                 <td>@stock.CEO</td>
             </tr>
-      
+
         </tbody>
 
     </table>
 
 </div>
 
+
+@section Scripts{
+
+    <script>    
+    function render(result)
+    {
+        result = JSON.parse(result);
+        var dataPoints = [];
+        var minDate = new Date();
+        minDate.setMonth(minDate.getMonth() - 5);
+
+        for (date in result) {
+            dataPoints.push({ x: new Date(date), y: Number(result[date]) });
+        }
+
+        var stockChart = new CanvasJS.StockChart("chartContainer", {
+            title: {
+                text: "StockChart Title"
+            },
+            charts: [{
+                data: [{
+                    type: "line", 
+                    dataPoints: dataPoints
+                }]
+            }],
+            navigator: {
+                slider: {
+                    minimum: minDate,
+                    maximum: new Date()
+                }
+            }
+        });
+
+        
+
+        stockChart.render();
+        
+    }
+
+    function getWeeklyData()
+    {
+        $.ajax({
+            type: "GET",
+            url: "/Details/@Model.name?handler=WeeklyData",
+            data: { Ticker: "@Model.name" },
+            async: false,
+            contentType: "application/json",
+            dataType: "json",
+            success: function (result) {
+                render(result)
+            },
+            error: function (req, status, error) {
+                console.log(error);
+            }
+
+        })
+    }
+    $(document).ready(function () {
+        getWeeklyData();
+    });
+
+    </script>
+
+}

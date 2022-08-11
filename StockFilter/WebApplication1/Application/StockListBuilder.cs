@@ -24,12 +24,7 @@ namespace WebApplication1.Application
         {
             if(stocks != null)
             {
-                if (DateTime.UtcNow < prev.AddMinutes(5)) return stocks;
-                foreach(Stock stock in stocks.ToList())
-                {
-                    HtmlRepository.Update(stock);
-                }
-                prev = DateTime.UtcNow;
+                return stocks;  
             }
             
             var tickers = TickersFile.ToList<string>();
