@@ -102,6 +102,7 @@
     <script>    
     function render(result)
     {
+        
         result = JSON.parse(result);
         var dataPoints = [];
         var minDate = new Date();
@@ -112,14 +113,24 @@
         }
 
         var stockChart = new CanvasJS.StockChart("chartContainer", {
+            theme: "light2",
             title: {
-                text: "StockChart Title"
+                text: "@Model.name"
             },
             charts: [{
+                axisY: {
+                    prefix: "$",
+                    title: "Closing Price"
+                },
+                axisX: {
+                    title: "Date"
+                },
                 data: [{
-                    type: "line", 
+                    type: "line",
+                    yValueFormatString: "$#,###.##",
                     dataPoints: dataPoints
                 }]
+                
             }],
             navigator: {
                 slider: {
