@@ -15,7 +15,7 @@ namespace WebApplication1.Data
     public class HtmlRepository
     {
         static String CIKMapping = System.IO.File.ReadAllText(".\\Application\\ticker_cik_map.txt");
-
+        static String JsonURL = "https://stockanalysis.com/api/quotes/s/";
         public static string RetriveDataFromStockDocuments(string DataPath, Stock stock, int caseVal)
         {
             try
@@ -107,7 +107,7 @@ namespace WebApplication1.Data
                //add the CIK to the stock for accessing the correct insider trade page.
                 SetUpCiK(stock);
                 List<Task<HtmlDocument>> tasks = new List<Task<HtmlDocument>>();
-                tasks.Add(Task.Run(() => ReadTextFromUrl($"https://api.stockanalysis.com/wp-json/sa/p?s={stock.Ticker}&t=stocks")));
+                tasks.Add(Task.Run(() => ReadTextFromUrl(JsonURL + stock.Ticker )));
                 tasks.Add(Task.Run(() => ReadTextFromUrl($"https://sec.report/CIK/{stock.CIK}/Insider-Trades")));
                 var documents = await Task.WhenAll(tasks);
                 stock.StockAnalyzer = documents[0];
@@ -126,7 +126,7 @@ namespace WebApplication1.Data
         public static void Update(Stock stock) {
             try
             {
-                stock.StockAnalyzer = ReadTextFromUrl($"https://api.stockanalysis.com/wp-json/sa/p?s={stock.Ticker}&t=stocks");
+                stock.StockAnalyzer = ReadTextFromUrl(JsonURL+stock.Ticker);
                 stock.Price = Stock_Data.GetPrice(stock);
                 stock.PriceChange = Stock_Data.GetPriceChange(stock);
                 stock.Volume = Stock_Data.GetVolume(stock);
